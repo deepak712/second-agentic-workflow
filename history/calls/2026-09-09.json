@@ -1,0 +1,145 @@
+[
+  {
+    "date": "2026-09-09",
+    "symbol": "BTC",
+    "coin_id": "bitcoin",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 78418,
+    "btc_at_call": 78418,
+    "why": "Sitting on the 78.3k support flagged by analysts, inside an 18-session 77.3k\u201381.3k range, into a CPI print with ~60% Fed hike odds priced.",
+    "invalidation": "Daily close back above 81,265 on expanding volume (thesis too cautious) or a close below 77,297 (range breaks down)."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "ETH",
+    "coin_id": "ethereum",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 2483.96,
+    "btc_at_call": 78418,
+    "why": "Range-bound 2,391\u20132,515 for three weeks with the largest visible buyer, Bitmine, 97% done accumulating.",
+    "invalidation": "Close above 2,515 with ETH dominance rising above 11.23%, or a loss of 2,391."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "DOT",
+    "coin_id": "polkadot",
+    "stance": "Wait",
+    "confidence": "High",
+    "price_at_call": 1.25,
+    "btc_at_call": 78418,
+    "why": "+17.5% in a day and +44% in a week with zero supporting headlines in today's triage and price 97.7% below ATH \u2014 an unexplained move is noise until a catalyst appears.",
+    "invalidation": "A named catalyst (upgrade, listing, treasury) emerges and the move holds above pre-spike levels for a week."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "M",
+    "coin_id": "memecore",
+    "stance": "Avoid",
+    "confidence": "Medium",
+    "price_at_call": 1.23,
+    "btc_at_call": 78418,
+    "why": "A $2.79B memecoin up 15.9% in a week on no news flow and no cash-flow anchor; positioning risk is asymmetric to the downside.",
+    "invalidation": "Sustained volume growth plus a real product/adoption catalyst, or a hold above $1.23 through a broad market drawdown."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "WBT",
+    "coin_id": "whitebit",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 81.22,
+    "btc_at_call": 78418,
+    "why": "Up 6.2% today and just 0.93% from all-time high, but exchange tokens with concentrated float and no news coverage offer poor risk at price discovery highs.",
+    "invalidation": "A pullback that holds a defined higher low, or a break to new highs on visible exchange-volume growth."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "ZEC",
+    "coin_id": "zcash",
+    "stance": "Wait",
+    "confidence": "High",
+    "price_at_call": 1177.23,
+    "btc_at_call": 78418,
+    "why": "+127% in 30 days makes this the most extended large-cap in the set; CoinDesk separately flagged ZEC \"leading losses\" on a down day, showing how fast the privacy trade unwinds.",
+    "invalidation": "A multi-week consolidation above ~$1,000 that resets momentum, or a full retrace of the 43% weekly move."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "CRO",
+    "coin_id": "crypto-com-chain",
+    "stance": "Avoid",
+    "confidence": "Medium",
+    "price_at_call": 0.058806,
+    "btc_at_call": 78418,
+    "why": "Cronos reversed its own chain to undo a $111M exploit with $9.2M still gone \u2014 a governance precedent that the Robinhood equity stake does not offset.",
+    "invalidation": "Credible technical safeguards plus no repeat intervention over the coming months; a rollback is not undoable news."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "XMR",
+    "coin_id": "monero",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 500.1,
+    "btc_at_call": 78418,
+    "why": "-3.66% today after +29.5% in 30d; the same privacy bid driving ZEC is now rolling over, and there is no XMR-specific catalyst in today's flow.",
+    "invalidation": "Reclaims and holds above ~$520 while ZEC also stabilises, confirming the privacy bid is intact rather than unwinding."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "HBAR",
+    "coin_id": "hedera-hashgraph",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 0.07904,
+    "btc_at_call": 78418,
+    "why": "Worst-of-set 24h move (-3.49%) despite a +7% week, with neutral news tone and no fresh adoption datapoint.",
+    "invalidation": "A weekly close back above the pre-drop level alongside broad alt strength (total cap turning positive)."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "XLM",
+    "coin_id": "stellar",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 0.187634,
+    "btc_at_call": 78418,
+    "why": "-3.14% today gives back nearly half the week's gain; Visa/Circle stablecoin news is accruing to USDC rails, not to XLM specifically.",
+    "invalidation": "A named payments/issuance partnership for Stellar, or a reclaim of $0.195 with rising volume."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "ASTER",
+    "coin_id": "aster-2",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 0.750234,
+    "btc_at_call": 78418,
+    "why": "Perp-DEX read-through from Hyperliquid's $14.3B OI is real but indirect; ASTER fell 2.84% today while HYPE printed an ATH \u2014 relative weakness within its own theme.",
+    "invalidation": "ASTER outperforming HYPE for a week, or losing $0.70 and breaking the 30-day uptrend."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "AAVE",
+    "coin_id": "aave",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 128.78,
+    "btc_at_call": 78418,
+    "why": "Visa's move into onchain lending validates the sector, but AAVE is -2.64% today and still 80.5% below ATH with no protocol-specific news.",
+    "invalidation": "Reclaim of ~$135 with sector confirmation, or a break below $120 that ends the +41% 30-day trend."
+  },
+  {
+    "date": "2026-09-09",
+    "symbol": "NEAR",
+    "coin_id": "near",
+    "stance": "Wait",
+    "confidence": "Medium",
+    "price_at_call": 2.32,
+    "btc_at_call": 78418,
+    "why": "+22.2% in 7d and +41% in 30d with no headline support in today's triage \u2014 momentum without a documented driver.",
+    "invalidation": "Holds above $2.20 on a broad market down-day (trend real), or gives back the weekly move (trend was rotation froth)."
+  }
+]

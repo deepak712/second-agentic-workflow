@@ -15,6 +15,9 @@ warnings.filterwarnings("ignore", message=r"urllib3 v2 only supports OpenSSL.*")
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TMP = ROOT / ".tmp"
 DELIVERABLES = ROOT / "deliverables"
+# Persistent, git-tracked learning state: the calls the report has made and how
+# they turned out. Deliberately NOT under .tmp/, which is disposable by design.
+HISTORY = ROOT / "history"
 
 
 def load_env() -> None:

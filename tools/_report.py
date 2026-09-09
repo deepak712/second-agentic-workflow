@@ -49,6 +49,13 @@ td.down { text-align: right; color: #c0392b; font-weight: bold; }
 .s-wait       { color: #b7791f; font-weight: bold; }
 .s-avoid      { color: #c0392b; font-weight: bold; }
 
+/* News importance badges, keyed to the triage impact score. */
+.badge      { font-size: 8pt; font-weight: bold; padding: 2pt 5pt; }
+.b-major    { background-color: #c0392b; color: #ffffff; }
+.b-important{ background-color: #d35400; color: #ffffff; }
+.b-notable  { background-color: #2b6cb0; color: #ffffff; }
+.b-minor    { background-color: #dfe6ec; color: #44515e; }
+
 .section-table { margin: 4pt 0 10pt 0; }
 .tbl-title { font-size: 10.5pt; font-weight: bold; color: #12385c; margin: 12pt 0 3pt 0; }
 
@@ -216,6 +223,13 @@ def style_model_tables(html: str) -> str:
 
     html = re.sub(r"(<td[^>]*>)\s*(%s)\s*(</td>)" % "|".join(_STANCES),
                   colour, html, flags=re.I)
+
+    # News importance tags: the model writes a literal [MAJOR] / [IMPORTANT] /
+    # [NOTABLE] / [MINOR] prefix on each news bullet, turned into a badge here.
+    html = re.sub(
+        r"\[(MAJOR|IMPORTANT|NOTABLE|MINOR)\]\s*",
+        lambda m: f"<span class='badge b-{m.group(1).lower()}'>{m.group(1)}</span> ",
+        html)
 
     def widen(m):
         head = m.group(0)

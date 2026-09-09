@@ -93,6 +93,13 @@ def main() -> None:
         run("triage news", ["triage_news.py", "--date", date, "--confirm"])
         run("make charts", ["make_charts.py", "--date", date])
         run("build report", ["build_report.py", "--date", date, "--confirm"])
+        # Score whatever has matured. Free, idempotent, and it must run after the
+        # report so today's calls are already recorded. A failure here is not
+        # worth losing the report over.
+        try:
+            run("score history", ["score_history.py"])
+        except Exception as exc:
+            print(f"  (scoring failed, continuing: {exc})", flush=True)
         if not args.skip_email:
             run("send email", ["send_email.py", "--date", date, "--provider", args.provider])
     except Exception as exc:

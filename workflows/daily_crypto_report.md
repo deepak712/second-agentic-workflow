@@ -136,3 +136,13 @@ By hand, stage by stage:
 - 2026-09-09 — Gmail App Passwords are displayed grouped ("abcd efgh ijkl mnop") and
   must be stored unspaced. `tools/check_env.py --fix-spaces` handles it; the same
   tool verifies both credentials without echoing them.
+- 2026-09-09 — Added the improvement loop: `history/calls/<date>.json` records every
+  stance with its coin id and price **at call time** (reconstructing this later from
+  the CSV is unreliable), and `score_history.py` grades them at 7 and 30 days.
+  First version scored everything on return-vs-BTC, which was wrong twice over: BTC
+  calls are unscoreable that way (relative return is 0 by construction) and an ETH
+  "Wait" through a +29.4% rally graded "neutral". Absolute return is now the primary
+  test, with vs-BTC kept as context.
+- 2026-09-09 — `feedback.md` is injected into every report prompt, but only the text
+  below the `## My instructions` marker; the preamble above it is addressed to the
+  reader and would otherwise be fed to the model as if it were an instruction.

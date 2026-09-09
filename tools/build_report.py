@@ -48,9 +48,22 @@ Section requirements:
   sentiment is stretched, recovering or deteriorating, and note when sentiment and
   price are diverging.
 - **What Moved the Market - Positive / Negative** - 3-6 bullets each, drawn from the
-  highest-impact classified headlines. Lead each bullet with the substance, and name
-  the source in parentheses. Ignore routine price-recap headlines. If a side has
-  genuinely little of substance, say so in one line rather than padding it.
+  highest-impact classified headlines. Name the source in parentheses. Ignore routine
+  price-recap headlines. If a side has genuinely little of substance, say so in one
+  line rather than padding it.
+
+  EVERY bullet in these two sections MUST begin with an importance tag in square
+  brackets, before any other text, chosen from the impact scores you were given:
+
+    [MAJOR]     - impact 5, or a 4 that is clearly moving the whole market today
+    [IMPORTANT] - impact 4: matters materially for a major asset or sector
+    [NOTABLE]   - impact 3: worth knowing, contained to one asset or theme
+    [MINOR]     - impact 1-2: context only, include sparingly
+
+  Format: `- [MAJOR] **The substance** happened (Source).`
+  Use the tag that matches the underlying headline's impact score, not the tone of
+  your own sentence. Do not invent a fifth tag, and do not tag bullets in any other
+  section. Order the bullets within each section from most to least important.
 - **Coin-by-Coin: Buy or Wait** - a markdown table, one row per coin in the deep-dive
   list you are given, with EXACTLY these columns:
   | Coin | Stance | Confidence | Why | Invalidation |
@@ -169,6 +182,35 @@ def build_user(market: dict, sent: dict, triage: dict) -> str:
               f"Most-mentioned coins: {json.dumps(triage.get('coin_mentions', {}))}",
               f"Per-coin news tone: {json.dumps(triage.get('coin_tone', {}))}"]
 
+    # Learning inputs: how past calls actually turned out, and the user's own
+    # standing corrections. Both are optional - absent on a fresh install.
+    try:
+        import score_history
+        record = json.loads((_lib.HISTORY / "track_record.json").read_text())
+        summary = score_history.render_summary(record)
+        if summary and "No calls" not in summary:
+            parts += ["", "=== YOUR OWN TRACK RECORD ===",
+                      "How your past calls actually performed, measured against BTC so",
+                      "you are not credited for market beta. Weigh this honestly: if a",
+                      "stance type is consistently wrong, change your approach today",
+                      "rather than repeating it.", "", summary]
+    except (FileNotFoundError, ImportError, ValueError):
+        pass
+
+    feedback = _lib.ROOT / "feedback.md"
+    if feedback.exists():
+        raw = feedback.read_text()
+        # Only what the reader wrote under the marker; everything above it is
+        # guidance addressed to them, not to the model.
+        if "## My instructions" in raw:
+            raw = raw.split("## My instructions", 1)[1]
+        raw = re.sub(r"<!--.*?-->", "", raw, flags=re.S)
+        text = "\n".join(ln for ln in raw.splitlines() if ln.strip())
+        if text.strip():
+            parts += ["", "=== STANDING INSTRUCTIONS FROM THE READER ===",
+                      "These are the reader's own corrections. They override your",
+                      "default judgement about what to cover and how.", "", text]
+
     parts += ["", "=== HEADLINES (highest impact first) ==="]
     ordered = sorted(triage.get("items", []),
                      key=lambda c: (-c["impact"], c["sentiment"] == "neutral"))
@@ -264,8 +306,39 @@ def main() -> None:
             w.writeheader()
             w.writerows(rows)
         print(f"stances -> {base}.csv  ({len(rows)} coins)")
+        n = record_calls(date, rows, market)
+        print(f"calls   -> history/calls/{date}.json  ({n} scoreable)")
     else:
         print("  WARNING: no Coin-by-Coin table found in the narrative; CSV skipped")
+
+
+def record_calls(date: str, rows: list, market: dict) -> int:
+    """Persist each stance with its coin id and price at the time of the call.
+
+    Written at call time rather than reconstructed later, so scoring never has to
+    guess which asset a table row meant or what it cost that day. Lives in
+    history/ (git-tracked), NOT .tmp/, because .tmp is disposable by design and
+    this is the one artifact that has to survive.
+    """
+    by_symbol = {c["symbol"].upper(): c for c in market.get("coins", [])}
+    calls = []
+    for r in rows:
+        # The Coin cell is "BTC" or "BTC (Bitcoin)"; the leading token is the ticker.
+        sym = re.split(r"[\s(]", r["Coin"].strip())[0].upper().lstrip("$")
+        coin = by_symbol.get(sym)
+        if not coin or not isinstance(coin.get("price_usd"), (int, float)):
+            continue
+        calls.append({
+            "date": date, "symbol": sym, "coin_id": coin["id"],
+            "stance": r["Stance"].strip(), "confidence": r["Confidence"].strip(),
+            "price_at_call": coin["price_usd"],
+            "btc_at_call": (by_symbol.get("BTC") or {}).get("price_usd"),
+            "why": r["Why"].strip(), "invalidation": r["Invalidation"].strip(),
+        })
+    out = _lib.HISTORY / "calls" / f"{date}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(calls, indent=2))
+    return len(calls)
 
 
 if __name__ == "__main__":
