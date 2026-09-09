@@ -25,8 +25,9 @@ import matplotlib.ticker as mticker  # noqa: E402
 FIGSIZE = (6.4, 2.5)
 DPI = 150
 
-INK = "#1a1a1a"
-GRID = "#dddddd"
+# Kept in sync with the PDF palette in _report.py.
+INK = "#12385c"       # navy, matches the report headings
+GRID = "#c8d4de"
 UP = "#12805c"
 DOWN = "#c0392b"
 LINE = "#2b6cb0"

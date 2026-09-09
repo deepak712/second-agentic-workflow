@@ -10,23 +10,53 @@ from xhtml2pdf import pisa
 import _lib
 import _llm
 
+# Palette. Kept in one place so the charts and the PDF stay in sync.
+NAVY = "#12385c"      # headings
+BLUE = "#2b6cb0"      # accents, links, BTC line
+GREEN = "#12805c"     # gains, Accumulate
+RED = "#c0392b"       # losses, Avoid
+AMBER = "#b7791f"     # Wait
+SLATE = "#5a6b7b"     # secondary text
+
 CSS = """
-@page { size: A4; margin: 1.6cm; }
-body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #1a1a1a; line-height: 1.45; }
-h1 { font-size: 19pt; margin: 0 0 2pt 0; }
-h2 { font-size: 13pt; margin: 16pt 0 4pt 0; border-bottom: 1px solid #ccc; padding-bottom: 2pt; }
-h3 { font-size: 11pt; margin: 10pt 0 2pt 0; }
+@page { size: A4; margin: 1.5cm; }
+body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #1f2933; line-height: 1.45; }
+
+h1 { font-size: 20pt; margin: 0 0 3pt 0; color: #12385c; }
+h2 { font-size: 13.5pt; margin: 15pt 0 5pt 0; color: #12385c;
+     border-bottom: 2px solid #2b6cb0; padding-bottom: 3pt; }
+h3 { font-size: 11pt; margin: 10pt 0 2pt 0; color: #2b6cb0; }
 ul { margin: 4pt 0 8pt 0; }
-li { margin-bottom: 3pt; }
-.meta { color: #666; font-size: 9pt; margin-bottom: 10pt; }
-table { border-collapse: collapse; width: 100%; margin: 8pt 0 4pt 0; font-size: 8pt; table-layout: fixed; }
-th, td { border: 1px solid #bbb; padding: 3pt 4pt; text-align: left; vertical-align: top; word-wrap: break-word; }
-th { background: #f0f0f0; font-size: 8pt; }
-td.co { font-weight: bold; }
+li { margin-bottom: 3.5pt; }
+strong { color: #12385c; }
+
+.meta { color: #5a6b7b; font-size: 9pt; margin-bottom: 4pt;
+        border-left: 3px solid #2b6cb0; padding: 3pt 0 3pt 7pt; background: #f4f8fb; }
+
+table { border-collapse: collapse; width: 100%; margin: 8pt 0 4pt 0; font-size: 8pt;
+        table-layout: fixed; }
+th, td { border: 1px solid #c8d4de; padding: 3.5pt 4pt; text-align: left;
+         vertical-align: top; word-wrap: break-word; }
+th { background: #12385c; color: #ffffff; font-size: 8pt; font-weight: bold; }
+tr.alt td { background: #f4f8fb; }
+td.co { font-weight: bold; color: #12385c; }
+td.num { text-align: right; }
+td.up { text-align: right; color: #12805c; font-weight: bold; }
+td.down { text-align: right; color: #c0392b; font-weight: bold; }
+
+/* Buy-or-wait stances, colour-coded so the table is scannable at a glance. */
+.s-accumulate { color: #12805c; font-weight: bold; }
+.s-wait       { color: #b7791f; font-weight: bold; }
+.s-avoid      { color: #c0392b; font-weight: bold; }
+
+.section-table { margin: 4pt 0 10pt 0; }
+.tbl-title { font-size: 10.5pt; font-weight: bold; color: #12385c; margin: 12pt 0 3pt 0; }
+
 .charts { margin: 6pt 0 10pt 0; }
 .chart { margin-bottom: 8pt; }
-.chart-cap { color: #666; font-size: 8pt; margin: 0 0 6pt 0; }
-.disclaimer { margin-top: 14pt; padding: 6pt 8pt; border: 1px solid #d4b106; background: #fffbe6;
+.chart-cap { color: #5a6b7b; font-size: 8pt; margin: 0 0 6pt 0; font-style: italic; }
+
+.disclaimer { margin-top: 14pt; padding: 7pt 9pt; border: 1px solid #d4b106; background: #fffbe6;
               color: #614700; font-size: 8pt; line-height: 1.35; }
 """
 
@@ -104,6 +134,107 @@ def charts_html(charts: list) -> str:
     return "".join(parts)
 
 
+def _money(v) -> str:
+    if not isinstance(v, (int, float)):
+        return "n/a"
+    for unit, div in (("T", 1e12), ("B", 1e9), ("M", 1e6)):
+        if abs(v) >= div:
+            return f"${v / div:,.2f}{unit}"
+    return f"${v:,.0f}"
+
+
+def _price(v) -> str:
+    if not isinstance(v, (int, float)):
+        return "n/a"
+    if v >= 1:
+        return f"${v:,.2f}"
+    if v >= 0.01:
+        return f"${v:.4f}"
+    return f"${v:.8f}".rstrip("0")
+
+
+def _pct_cell(v) -> str:
+    """A percentage table cell, green when up and red when down."""
+    if not isinstance(v, (int, float)):
+        return "<td class='num'>n/a</td>"
+    cls = "up" if v >= 0 else "down"
+    return f"<td class='{cls}'>{v:+.2f}%</td>"
+
+
+def market_table_html(coins: list, n: int = 10, title: str = "") -> str:
+    """Top-N coins by market cap as a coloured HTML table.
+
+    Rendered straight from the fetched data rather than asked of the model, so the
+    prices in the report are always present and always exactly what was fetched.
+    """
+    rows = coins[:n]
+    if not rows:
+        return ""
+    out = []
+    if title:
+        out.append(f"<div class='tbl-title'>{esc(title)}</div>")
+    out.append("<table class='section-table'>"
+               "<tr><th width='7%'>#</th><th width='23%'>Coin</th>"
+               "<th width='16%'>Price</th><th width='13%'>24h</th>"
+               "<th width='13%'>7d</th><th width='13%'>30d</th>"
+               "<th width='15%'>Market cap</th></tr>")
+    for i, c in enumerate(rows):
+        alt = " class='alt'" if i % 2 else ""
+        name = f"{c.get('symbol', '').upper()} <span style='color:#5a6b7b'>{esc(c.get('name', ''))}</span>"
+        out.append(
+            f"<tr{alt}><td class='num'>{c.get('rank') or i + 1}</td>"
+            f"<td class='co'>{name}</td>"
+            f"<td class='num'>{_price(c.get('price_usd'))}</td>"
+            + _pct_cell(c.get("chg_24h"))
+            + _pct_cell(c.get("chg_7d"))
+            + _pct_cell(c.get("chg_30d"))
+            + f"<td class='num'>{_money(c.get('market_cap_usd'))}</td></tr>")
+    out.append("</table>")
+    return "".join(out)
+
+
+_STANCES = ("Accumulate", "Wait", "Avoid")
+
+
+# Coin | Stance | Confidence | Why | Invalidation. Without these the markdown
+# renderer gives all five columns equal width, which squeezes the two prose
+# columns into tall, unreadable slivers.
+STANCE_WIDTHS = ("12%", "11%", "11%", "36%", "30%")
+
+
+def style_model_tables(html: str) -> str:
+    """Colour the stance words and widen the prose columns of the stance table.
+
+    Runs on the HTML the markdown renderer produced, so the model stays free to
+    write an ordinary markdown table and the presentation is fixed up here.
+    """
+    import re
+
+    def colour(m):
+        word = m.group(2)
+        return f"{m.group(1)}<span class='s-{word.lower()}'>{word}</span>{m.group(3)}"
+
+    html = re.sub(r"(<td[^>]*>)\s*(%s)\s*(</td>)" % "|".join(_STANCES),
+                  colour, html, flags=re.I)
+
+    def widen(m):
+        head = m.group(0)
+        if "stance" not in head.lower():
+            return head
+        i = [0]
+
+        def add_width(hm):
+            w = STANCE_WIDTHS[i[0]] if i[0] < len(STANCE_WIDTHS) else None
+            i[0] += 1
+            return f"<th width='{w}'>" if w else hm.group(0)
+
+        return re.sub(r"<th>", add_width, head)
+
+    # Only the header row of each table is rewritten; widths propagate down.
+    return re.sub(r"<tr>\s*(?:<th>.*?</th>\s*)+</tr>", widen, html,
+                  flags=re.S | re.I)
+
+
 def render_pdf(out_base: pathlib.Path, title_html: str, meta_html: str,
                body_markdown: str, *, prepend_html: str = "",
                append_html: str = "") -> None:
@@ -111,11 +242,12 @@ def render_pdf(out_base: pathlib.Path, title_html: str, meta_html: str,
     (e.g. charts) and a markdown body. Raises on render error."""
     out_base.parent.mkdir(parents=True, exist_ok=True)
     body_markdown = strip_leading_title(body_markdown)
+    rendered = style_model_tables(md.markdown(body_markdown, extensions=["tables"]))
     body = (
         f"<h1>{title_html}</h1>"
         f"<div class='meta'>{meta_html}</div>"
         f"{prepend_html}"
-        f"{md.markdown(body_markdown, extensions=['tables'])}"
+        f"{rendered}"
         f"{append_html}"
     )
     html = f"<html><head><style>{CSS}</style></head><body>{body}</body></html>"

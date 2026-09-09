@@ -39,7 +39,10 @@ Use these exact ## headings, in this order:
 Section requirements:
 
 - **Market Snapshot** - 3-5 bullets on total market cap, the 24h direction, BTC and
-  ETH dominance and what the dominance trend implies about risk appetite.
+  ETH dominance and what the dominance trend implies about risk appetite. A table of
+  the top 10 coins with their prices is already printed above this section, so do not
+  reproduce it; reference those numbers in prose instead, and do call out by name any
+  of the top 10 whose move is worth explaining.
 - **Sentiment Read** - interpret the Fear & Greed number *against its own recent
   history*, which matters far more than the absolute level. Say plainly whether
   sentiment is stretched, recovering or deteriorating, and note when sentiment and
@@ -243,9 +246,14 @@ def main() -> None:
             f"Fear &amp; Greed {cur.get('value')} ({_report.esc(cur.get('label', 'n/a'))}) &middot; "
             f"{triage.get('count', 0)} headlines analysed")
 
+    # The top-10 price table is rendered from the fetched data, not written by the
+    # model, so it is always present and always matches exactly what was fetched.
+    top10 = _report.market_table_html(market.get("coins", []), n=10,
+                                      title="Top 10 by Market Cap")
+
     base = _lib.DELIVERABLES / f"crypto_report_{date}"
     _report.render_pdf(base, "Daily Crypto Market Report", meta, narrative,
-                       prepend_html=_report.charts_html(charts),
+                       prepend_html=top10 + _report.charts_html(charts),
                        append_html=_report.DISCLAIMER)
     print(f"report -> {base}.pdf")
 
