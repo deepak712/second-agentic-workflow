@@ -1,0 +1,11 @@
+# runtime deps for tools/
+python-dotenv
+requests
+
+# LLM synthesis
+anthropic
+
+# daily_crypto_report workflow
+markdown
+xhtml2pdf
+matplotlib

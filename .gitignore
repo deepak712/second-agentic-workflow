@@ -1,0 +1,28 @@
+# Secrets & credentials
+.env
+credentials.json
+token.json
+*.pem
+
+# Temporary / regenerable files
+.tmp/*
+!.tmp/.gitkeep
+
+# Generated deliverables (regenerable; final copies are emailed)
+deliverables/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code local (per-machine) settings
+.claude/settings.local.json

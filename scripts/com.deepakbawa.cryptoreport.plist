@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.deepakbawa.cryptoreport</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__ROOT__/.venv/bin/python</string>
+        <string>__ROOT__/tools/run_daily.py</string>
+        <string>--confirm</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__ROOT__</string>
+
+    <!-- 08:07 local. Deliberately off the :00 mark so this run does not land on
+         the same instant as every other scheduled job on the machine. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>7</integer>
+    </dict>
+
+    <!-- Do not fire on login/reload; only on the schedule above. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>__ROOT__/.tmp/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>__ROOT__/.tmp/logs/launchd.err.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
