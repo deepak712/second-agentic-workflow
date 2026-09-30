@@ -251,6 +251,10 @@ def main() -> None:
                     help="rebuild the PDF from the cached narrative, no API call")
     ap.add_argument("--max-tokens", type=int, default=9000,
                     help="output cap (Opus adaptive thinking counts against this)")
+    ap.add_argument("--effort", default="high",
+                    choices=["low", "medium", "high", "xhigh", "max"],
+                    help="Opus thinking depth (default high). Thinking is billed as "
+                         "output, so medium is cheaper - compare on --date first")
     args = ap.parse_args()
     date = args.date or _lib.today()
 
@@ -265,7 +269,7 @@ def main() -> None:
     narrative = _report.resolve_narrative(
         _report.cache_path(date), _llm.OPUS, SYSTEM, user,
         confirm=args.confirm, reuse=args.reuse_narrative,
-        max_output_tokens=args.max_tokens,
+        max_output_tokens=args.max_tokens, effort=args.effort,
     )
     if narrative is None:
         return

@@ -9,12 +9,13 @@ import anthropic
 import _lib
 
 # Models used by this project (see CLAUDE.md decisions).
-OPUS = "claude-opus-5"       # report synthesis + buy/wait theses
+OPUS = "claude-opus-5-5"     # report synthesis + buy/wait theses
 SONNET = "claude-sonnet-5"   # per-batch headline triage
 
 # USD per 1M tokens: (input, output). Keep in sync with Anthropic pricing.
 RATES = {
-    OPUS: (5.0, 25.0),
+    OPUS: (4.0, 20.0),
+    "claude-opus-5": (5.0, 25.0),
     SONNET: (2.0, 10.0),
     "claude-haiku-4-5": (1.0, 5.0),
 }
@@ -66,14 +67,29 @@ def _strip_fences(text: str) -> str:
     return text.strip()
 
 
-def complete_json(model: str, system: str, user: str, max_tokens: int = 4000):
+def _effort(effort: str | None) -> dict:
+    """output_config.effort sets how much the model thinks, and thinking is billed as
+    output. Sent via extra_body so it works on older installed SDK versions too."""
+    return {"extra_body": {"output_config": {"effort": effort}}} if effort else {}
+
+
+def _check_refusal(resp) -> None:
+    if resp.stop_reason == "refusal":
+        raise SystemExit(f"Model declined the request (stop_reason=refusal): "
+                         f"{getattr(resp, 'stop_details', None)}")
+
+
+def complete_json(model: str, system: str, user: str, max_tokens: int = 4000,
+                  effort: str | None = None):
     """One messages.create call; parse the text response as JSON."""
     resp = client().messages.create(
         model=model,
         max_tokens=max_tokens,
         system=system + "\n\nRespond with valid JSON only. No prose, no code fences.",
         messages=[{"role": "user", "content": user}],
+        **_effort(effort),
     )
+    _check_refusal(resp)
     text = "".join(b.text for b in resp.content if b.type == "text")
     try:
         return json.loads(_strip_fences(text))
@@ -83,7 +99,8 @@ def complete_json(model: str, system: str, user: str, max_tokens: int = 4000):
         )
 
 
-def complete_text(model: str, system: str, user: str, max_tokens: int = 12000) -> str:
+def complete_text(model: str, system: str, user: str, max_tokens: int = 12000,
+                  effort: str | None = None) -> str:
     """One call for prose output. Streams so large max_tokens doesn't time out,
     and warns if the response was truncated at the token cap."""
     with client().messages.stream(
@@ -91,8 +108,10 @@ def complete_text(model: str, system: str, user: str, max_tokens: int = 12000) -
         max_tokens=max_tokens,
         system=system,
         messages=[{"role": "user", "content": user}],
+        **_effort(effort),
     ) as stream:
         resp = stream.get_final_message()
+    _check_refusal(resp)
     text = "".join(b.text for b in resp.content if b.type == "text").strip()
     if resp.stop_reason == "max_tokens":
         print(f"  WARNING: response hit the {max_tokens}-token cap and may be "

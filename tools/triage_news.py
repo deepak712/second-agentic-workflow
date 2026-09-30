@@ -135,7 +135,7 @@ def main() -> None:
     for n, batch in enumerate(batches, 1):
         print(f"  triaging batch {n}/{len(batches)} ({len(batch)} items)...")
         raw = _llm.complete_json(_llm.SONNET, SYSTEM, build_user(batch),
-                                 max_tokens=100 * len(batch))
+                                 max_tokens=100 * len(batch), effort="low")
         got = normalize(raw, batch)
         if len(got) != len(batch):
             print(f"    note: {len(batch)} sent, {len(got)} classified", file=sys.stderr)

@@ -25,8 +25,8 @@ positive vs negative; and email a PDF research brief that ends in a per-coin
 | `tools/send_email.py` | free | emails the PDF, smtp or resend backend |
 | `tools/run_daily.py` | wraps the paid ones | the whole chain; launchd's entry point |
 
-Models: Sonnet 5 (`claude-sonnet-5`) for triage, Opus 5 (`claude-opus-5`) for
-synthesis. Typical run: **~$0.10–0.20**.
+Models: Sonnet 5 (`claude-sonnet-5`) at effort `low` for triage, Opus 5.5
+(`claude-opus-5-5`) at effort `high` for synthesis. Typical run: **~$0.07–0.15**.
 
 **Paid tools are dry-run by default** — they print a token/cost estimate and exit.
 Re-run with `--confirm` to spend. Show the user the estimate and get a go-ahead
@@ -146,3 +146,14 @@ By hand, stage by stage:
 - 2026-09-09 — `feedback.md` is injected into every report prompt, but only the text
   below the `## My instructions` marker; the preamble above it is addressed to the
   reader and would otherwise be fed to the model as if it were an instruction.
+- 2026-09-30 — **Cost pass.** (1) Synthesis moved from Opus 5 ($5/$25 per MTok) to
+  Opus 5.5 ($4/$20), 20% cheaper per token. Opus 5.5 defaults to effort `medium`
+  where Opus 5 defaulted to `high`, so `build_report.py` sets `--effort high`
+  explicitly to keep the report's depth unchanged. (2) Triage now runs at effort
+  `low`. Sonnet 5 thinks adaptively by default and thinking is billed as output,
+  which is wasted on a 5-field classification. Spot-check the first low-effort
+  triage against the usual ~10 headlines. Next levers if cost still matters, each
+  a quality or latency tradeoff to test first: `build_report.py --effort medium`
+  (A/B it with `--date` on a cached day), Haiku 4.5 for triage (half of Sonnet's
+  price), or the Batch API for triage (50% off, but results can take far longer
+  than the ~30s the scheduled run expects).

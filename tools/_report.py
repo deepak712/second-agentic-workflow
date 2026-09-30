@@ -87,7 +87,8 @@ def cache_path(slug: str, kind: str = "narrative") -> pathlib.Path:
 
 
 def resolve_narrative(cache: pathlib.Path, model: str, system: str, user: str,
-                      *, confirm: bool, reuse: bool, max_output_tokens: int = 4000):
+                      *, confirm: bool, reuse: bool, max_output_tokens: int = 4000,
+                      effort: str | None = None):
     """Return the narrative markdown, or None if this was a dry run (estimate printed).
 
     reuse  -> load the cached narrative, no API call
@@ -102,7 +103,8 @@ def resolve_narrative(cache: pathlib.Path, model: str, system: str, user: str,
     if not confirm:
         _llm.print_estimate(_llm.estimate(model, system, user, max_output_tokens=max_output_tokens))
         return None
-    text = _llm.complete_text(model, system, user, max_tokens=max_output_tokens)
+    text = _llm.complete_text(model, system, user, max_tokens=max_output_tokens,
+                              effort=effort)
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(text)
     return text
