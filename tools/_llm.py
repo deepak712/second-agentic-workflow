@@ -9,15 +9,15 @@ import anthropic
 import _lib
 
 # Models used by this project (see CLAUDE.md decisions).
-OPUS = "claude-opus-5-5"     # report synthesis + buy/wait theses
-SONNET = "claude-sonnet-5"   # per-batch headline triage
+OPUS = "claude-opus-5-5"     # not used by default; the higher-quality option for synthesis
+SONNET = "claude-sonnet-5-5" # report synthesis + buy/wait theses (half Opus's price)
+HAIKU = "claude-haiku-4-5"   # per-batch headline triage (half Sonnet's price)
 
 # USD per 1M tokens: (input, output). Keep in sync with Anthropic pricing.
 RATES = {
     OPUS: (4.0, 20.0),
-    "claude-opus-5": (5.0, 25.0),
     SONNET: (2.0, 10.0),
-    "claude-haiku-4-5": (1.0, 5.0),
+    HAIKU: (1.0, 5.0),
 }
 
 _client = None

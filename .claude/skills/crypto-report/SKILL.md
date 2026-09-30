@@ -19,7 +19,7 @@ and `CLAUDE.md` for the framework rules.
    estimate and get an explicit go-ahead before spending.** This is a hard rule
    from CLAUDE.md, not a courtesy.
 3. **`--reuse-narrative` costs nothing.** Any change to layout, CSS, charts,
-   tables or badges must be verified this way first. Never spend an Opus call to
+   tables or badges must be verified this way first. Never spend a synthesis call to
    check a visual change.
 4. **`.tmp/` is disposable; `history/` is not.** The track record and recorded
    calls are the only learning state. Never write learning state to `.tmp/`, and
@@ -40,9 +40,9 @@ Stage by stage, and what each costs:
 | Tool | Cost | Notes |
 |---|---|---|
 | `fetch_market.py` `fetch_sentiment.py` `fetch_news.py` | free | keyless; failures land in `errors[]`, exit 0 |
-| `triage_news.py` | **paid** (Sonnet) | ~$0.06; classifies ~100 headlines |
+| `triage_news.py` | **paid** (Haiku 4.5) | ~$0.03; classifies ~100 headlines |
 | `make_charts.py` | free | 3 PNGs |
-| `build_report.py` | **paid** (Opus) | ~$0.10; `--reuse-narrative` is free |
+| `build_report.py` | **paid** (Sonnet 5.5) | ~$0.04; `--reuse-narrative` is free |
 | `send_email.py` | free | `--test` verifies credentials without a report |
 | `score_history.py` | free | scores past calls; idempotent, safe to re-run |
 
@@ -95,7 +95,7 @@ difference between a one-off patch and a durable improvement.
   coin reached the table without a data row. Check the deep-dive section in
   `build_report.build_user`; every deep-dive coin needs its own row.
 - **CoinGecko 429** → backoff is built in; if it still fails, wait, do not hammer.
-- **Opus truncation mid-section** → adaptive thinking counts against `max_tokens`;
+- **Synthesis truncation mid-section** → adaptive thinking counts against `max_tokens`;
   raise `--max-tokens`.
 - **No Coin-by-Coin table found** → PDF still renders, CSV and call recording are
   skipped. Needs a fresh `--confirm` run.

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Synthesize the daily crypto report: market + sentiment + triaged news -> PDF + CSV.
 
-PAID: 1 Claude (Opus) call. Dry-run by default; --confirm to spend.
---reuse-narrative rebuilds the PDF from cache with no Opus call.
+PAID: 1 Claude (Sonnet 5.5) call. Dry-run by default; --confirm to spend.
+--reuse-narrative rebuilds the PDF from cache with no API call.
 
     python tools/build_report.py                    # estimate only
     python tools/build_report.py --confirm          # spend
@@ -250,10 +250,10 @@ def main() -> None:
     ap.add_argument("--reuse-narrative", action="store_true",
                     help="rebuild the PDF from the cached narrative, no API call")
     ap.add_argument("--max-tokens", type=int, default=9000,
-                    help="output cap (Opus adaptive thinking counts against this)")
+                    help="output cap (adaptive thinking counts against this)")
     ap.add_argument("--effort", default="high",
                     choices=["low", "medium", "high", "xhigh", "max"],
-                    help="Opus thinking depth (default high). Thinking is billed as "
+                    help="thinking depth (default high). Thinking is billed as "
                          "output, so medium is cheaper - compare on --date first")
     args = ap.parse_args()
     date = args.date or _lib.today()
@@ -267,7 +267,7 @@ def main() -> None:
 
     user = build_user(market, sent, triage)
     narrative = _report.resolve_narrative(
-        _report.cache_path(date), _llm.OPUS, SYSTEM, user,
+        _report.cache_path(date), _llm.SONNET, SYSTEM, user,
         confirm=args.confirm, reuse=args.reuse_narrative,
         max_output_tokens=args.max_tokens, effort=args.effort,
     )
