@@ -19,14 +19,15 @@ positive vs negative; and email a PDF research brief that ends in a per-coin
 | `tools/fetch_market.py` | free | CoinGecko: global totals, top-N coins, BTC/ETH 30d history, mover selection |
 | `tools/fetch_sentiment.py` | free | alternative.me Fear & Greed + 30d history and deltas |
 | `tools/fetch_news.py` | free | six RSS feeds → deduped headlines from the last 30h |
-| `tools/triage_news.py` | **PAID** — ~1 Sonnet call per 40 headlines | sentiment / impact / coins / theme per headline |
+| `tools/triage_news.py` | **PAID** — ~1 Haiku call per 40 headlines | sentiment / impact / coins / theme per headline |
 | `tools/make_charts.py` | free | three PNGs: fear & greed, movers, BTC 30d |
-| `tools/build_report.py` | **PAID** — 1 Opus call | synthesis → narrative → PDF + stance CSV |
+| `tools/build_report.py` | **PAID** — 1 Sonnet 5.5 call | synthesis → narrative → PDF + stance CSV |
 | `tools/send_email.py` | free | emails the PDF, smtp or resend backend |
 | `tools/run_daily.py` | wraps the paid ones | the whole chain; launchd's entry point |
 
-Models: Sonnet 5 (`claude-sonnet-5`) for triage, Opus 5 (`claude-opus-5`) for
-synthesis. Typical run: **~$0.10–0.20**.
+Models: Haiku 4.5 (`claude-haiku-4-5`) for triage, Sonnet 5.5 (`claude-sonnet-5-5`)
+at effort `high` for synthesis. Typical run: **~$0.05–0.08**, roughly half the
+old Sonnet 5 + Opus 5 setup.
 
 **Paid tools are dry-run by default** — they print a token/cost estimate and exit.
 Re-run with `--confirm` to spend. Show the user the estimate and get a go-ahead
@@ -69,7 +70,7 @@ By hand, stage by stage:
    .venv/bin/python tools/build_report.py --confirm
    ```
    Iterating on layout afterwards is free: `--reuse-narrative` rebuilds the PDF
-   from `.tmp/report_narrative_<date>.md` with no Opus call.
+   from `.tmp/report_narrative_<date>.md` with no API call.
 
 5. **Send**:
    ```
@@ -97,7 +98,7 @@ By hand, stage by stage:
 - **Model returns the wrong item count in triage** — `normalize()` keys results back
   to the batch by id and drops anything unmatched, so a short reply loses items but
   never corrupts them. The count mismatch is printed to stderr.
-- **Opus truncation** — Opus 5's adaptive thinking counts against `max_tokens`.
+- **Synthesis truncation** — adaptive thinking counts against `max_tokens`.
   `build_report.py` defaults to 9000 and `_llm.complete_text` warns when the cap is
   hit; raise `--max-tokens` if the narrative ends mid-section.
 - **No Coin-by-Coin table in the narrative** — the PDF still renders; the CSV is
@@ -146,3 +147,13 @@ By hand, stage by stage:
 - 2026-09-09 — `feedback.md` is injected into every report prompt, but only the text
   below the `## My instructions` marker; the preamble above it is addressed to the
   reader and would otherwise be fed to the model as if it were an instruction.
+- 2026-09-30 — **Cost pass: cheaper models.** Triage moved from Sonnet 5 ($2/$10
+  per MTok) to Haiku 4.5 ($1/$5). Synthesis moved from Opus 5 ($5/$25) to Sonnet 5.5
+  ($2/$10). Sonnet 5.5 costs the same as Sonnet 5, so it was not a saving for triage.
+  Haiku 4.5 **rejects** `output_config.effort` (400) and does not think unless
+  asked, so triage sends no effort. Synthesis pins `--effort high`; thinking is
+  billed as output, so `--effort medium` is the next lever. Watch the first
+  reports for quality: spot-check ~10 Haiku classifications, and check the
+  buy/wait table has a real, evidence-based "Why" in every row. If synthesis
+  quality drops, `_llm.OPUS` (Opus 5.5, $4/$20) is the drop-in upgrade.
+  Every call now exits clearly on a `refusal` stop reason.

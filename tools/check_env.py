@@ -72,7 +72,7 @@ def check_anthropic() -> bool:
     try:
         import _llm
         counted = _llm.client().messages.count_tokens(
-            model=_llm.SONNET, messages=[{"role": "user", "content": "ping"}])
+            model=_llm.HAIKU, messages=[{"role": "user", "content": "ping"}])
         print(f"[{OK}] Anthropic API reachable and key accepted "
               f"(count_tokens returned {counted.input_tokens} tokens, no charge)")
         return True

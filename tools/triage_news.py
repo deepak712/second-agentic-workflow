@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Classify the day's headlines by sentiment, impact, coins mentioned and theme.
 
-PAID: ~1 Sonnet call per 40 headlines (typically 3 calls/day).
+PAID: ~1 Haiku call per 40 headlines (typically 3 calls/day).
 Dry-run by default - prints a token/USD estimate and exits; --confirm to spend.
 
     python tools/triage_news.py                 # estimate only
@@ -122,7 +122,7 @@ def main() -> None:
 
     if not args.confirm:
         # Batches are near-identical in size, so estimate one and scale.
-        est = _llm.estimate(_llm.SONNET, SYSTEM, build_user(batches[0]),
+        est = _llm.estimate(_llm.HAIKU, SYSTEM, build_user(batches[0]),
                             max_output_tokens=100 * len(batches[0]))
         est["input_tokens"] *= len(batches)
         est["assumed_output_tokens"] *= len(batches)
@@ -134,8 +134,8 @@ def main() -> None:
     classified: list[dict] = []
     for n, batch in enumerate(batches, 1):
         print(f"  triaging batch {n}/{len(batches)} ({len(batch)} items)...")
-        raw = _llm.complete_json(_llm.SONNET, SYSTEM, build_user(batch),
-                                 max_tokens=100 * len(batch))
+        raw = _llm.complete_json(_llm.HAIKU, SYSTEM, build_user(batch),
+                                 max_tokens=100 * len(batch))  # Haiku 4.5 rejects effort
         got = normalize(raw, batch)
         if len(got) != len(batch):
             print(f"    note: {len(batch)} sent, {len(got)} classified", file=sys.stderr)
@@ -160,7 +160,7 @@ def main() -> None:
 
     out = {
         "date": date,
-        "model": _llm.SONNET,
+        "model": _llm.HAIKU,
         "count": len(classified),
         "sentiment_counts": dict(sentiments),
         "theme_counts": dict(themes),
